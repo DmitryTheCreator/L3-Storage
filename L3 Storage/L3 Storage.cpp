@@ -7,7 +7,10 @@ const int AMOUNT = 100;
 
 
 class Object {
+protected:
+	
 public:
+	string classname;
 	Object() {
 
 	}
@@ -18,6 +21,7 @@ public:
 
 class Box : public Object {
 public:
+	string classname = "box";
 	Box() {
 
 	}
@@ -25,16 +29,20 @@ public:
 
 class File : public Object {
 public:
+	string classname = "file";
+	File() {
+
+	}
 };
 
 
 class MyStorage {
 private:
 	int length;
-	Object* objects = new Object[length];
+	Object** objects = new Object*[length];
 public:
 	MyStorage() {
-		length = 1 + rand() % 15;
+		length = 10 + rand() % 15;
 	}
 	MyStorage(int length) {
 		this->length = length;
@@ -43,73 +51,60 @@ public:
 
 	}
 
-	void add_objects(Object objects[]) {
-		for (int i = 0; i < get_count(); ++i) {
-			 this->objects[i] = objects[i];
-		}
+	void add_object(int index, Object *object) {
+		 objects[index] = object;
 	}
 
-	void delete_objects(Object objects[]) {
+	void delete_objects(int index) {		
+		delete objects[index];
+		objects[index] = NULL;
+	}
+
+	void get_object(int index) {
 		
+		if (objects[index]->classname == "box") printf("box\n");
+		if (objects[index]->classname == "file") printf("file\n");
+		//return *objects[index];
 	}
 	 
-
 	int get_count() {
 		return length;
 	}
 
 };
 
-void create_objects(MyStorage storage);
-void add_to_storage(MyStorage storage, Object objects[]);
-void delete_from_storage(MyStorage storage, Object objects[]);
+void create_objects(int index, MyStorage storage);
+void add_to_storage(int index, MyStorage storage, Object *object);
+void delete_from_storage(int index, MyStorage storage);
 
-void create_objects(MyStorage storage)
+void create_objects(int index, MyStorage storage)
 {
-	Object* objects = new Object[storage.get_count()];
-	for (int i = 0; i < storage.get_count(); ++i) {
-		int count = 1 + rand() % 2;
-		if (count == 1) {
-			objects[i] = Box();
-			printf("box\n");
-		}
-
-		if (count == 2) {
-			objects[i] = File();
-			printf("file\n");
-		}
-	}
-	add_to_storage(storage, objects);
-
+	int count = 1 + rand() % 2;
+	if (count == 1) add_to_storage(index, storage, new Box());
+	if (count == 2) add_to_storage(index, storage, new File());
 }
 
-void add_to_storage(MyStorage storage, Object objects[])
+void add_to_storage(int index, MyStorage storage, Object *object)
 {
-	storage.add_objects(objects); 
+	storage.add_object(index, object); 
 }
 
-void delete_from_storage(MyStorage storage, Object objects[])
+void delete_from_storage(int index, MyStorage storage)
 {
-
+	storage.delete_objects(index);
 }
 
 int main()
 {
 	srand(time(NULL));
 
-	{
-		MyStorage storage(10);
-		create_objects(storage);
-		printf("\n%d", storage.get_count());
-		printf("\n\n");
-	}
-
-	{
-		MyStorage storage1;
-		create_objects(storage1);
-		printf("\n%d", storage1.get_count());
-		printf("\n\n");
-	}
-
+	MyStorage storage2;
+	create_objects(rand()%storage2.get_count(), storage2);
+	//storage2.get_object(0);
+	printf("\n%d\n", storage2.get_count());
+	//delete_from_storage(rand() % storage2.get_count(), storage2);
+	storage2.get_object(1);
+	printf("\n%d\n\n", storage2.get_count());
+	
 }
 
