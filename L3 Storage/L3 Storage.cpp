@@ -11,7 +11,8 @@ protected:
 	
 public:
 	string classname;
-	Object() {
+	Object()
+	{
 
 	}
 	~Object() {
