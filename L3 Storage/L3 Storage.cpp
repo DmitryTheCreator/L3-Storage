@@ -1,110 +1,134 @@
 ﻿#include <iostream>
+#include <list>
 #include <ctime>
+#include <Windows.h>
 
 using namespace std;
 
 const int AMOUNT = 100;
 
 
-class Object {
-protected:
-	
+class Food {
 public:
-	string classname;
-	Object() {
+	virtual Food* clone() = NULL;
+};
 
-	}
-	~Object() {
+class Meat : public Food {
+public:
+	virtual Food* clone() {
+		cout << "Здесь лежит ";
+		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+		SetConsoleTextAttribute(hConsole, (WORD)((0 << 4) | 12));
+		cout << "Мясо\n";
+		SetConsoleTextAttribute(hConsole, (WORD)((0 << 4) | 7));
+		return new Meat();
 
 	}
 };
 
-class Box : public Object {
+class Vegetable : public Food {
 public:
-	string classname = "box";
-	Box() {
-
+	virtual Food* clone() {
+		cout << "Тут хранятся ";
+		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+		SetConsoleTextAttribute(hConsole, (WORD)((0 << 4) | 13));
+		cout << "Овощи\n";
+		SetConsoleTextAttribute(hConsole, (WORD)((0 << 4) | 7));
+		return new Vegetable();
 	}
 };
 
-class File : public Object {
+class Fruit : public Food {
 public:
-	string classname = "file";
-	File() {
-
+	virtual Food* clone() {
+		cout << "В этом месте содержатся ";
+		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+		SetConsoleTextAttribute(hConsole, (WORD)((0 << 4) | 2));
+		cout << "Фрукты\n";
+		SetConsoleTextAttribute(hConsole, (WORD)((0 << 4) | 7));
+		return new Fruit();
 	}
 };
 
 
-class MyStorage {
+
+
+class Storage {
 private:
 	int length;
-	Object** objects = new Object*[length];
+	//Food** objects = new Food*[length];
+	//list<Food>* food = new list<Food>[length];
+	list<Food*> food;
 public:
-	MyStorage() {
+	Storage() {
 		length = 10 + rand() % 15;
 	}
-	MyStorage(int length) {
+	Storage(int length) {
 		this->length = length;
 	}
-	~MyStorage() {
+	~Storage() {
 
 	}
 
-	void add_object(int index, Object *object) {
-		 objects[index] = object;
+	void add_object(int index, list<Food*> food) {
+		for (auto i = food.begin(); i != food.end(); ++i) {
+			this->food.push_back(*i);		
+		}
 	}
 
 	void delete_objects(int index) {		
-		delete objects[index];
-		objects[index] = NULL;
-	}
+		//delete objects[index];
+		//objects[index] = NULL;
+	} 
 
-	void get_object(int index) {
-		
-		if (objects[index]->classname == "box") printf("box\n");
-		if (objects[index]->classname == "file") printf("file\n");
-		//return *objects[index];
+	void get_object() {
+		for (auto i = food.begin(); i != food.end(); ++i) {
+			cout << (*i)->clone();
+			printf("\r");
+		}
 	}
 	 
 	int get_count() {
-		return length;
+		//return length;
 	}
 
 };
 
-void create_objects(int index, MyStorage storage);
-void add_to_storage(int index, MyStorage storage, Object *object);
-void delete_from_storage(int index, MyStorage storage);
+list<Food*> cook_food(int index, Storage storage);
+void add_to_storage(int index, Storage storage, list<Food*> food);
+void delete_from_storage(int index, Storage storage);
 
-void create_objects(int index, MyStorage storage)
+list<Food*> cook_food(int index, Storage storage)
 {
-	int count = 1 + rand() % 2;
-	if (count == 1) add_to_storage(index, storage, new Box());
-	if (count == 2) add_to_storage(index, storage, new File());
+	list<Food*> food;
+	for (int i = 0; i < index; ++i) {
+		int count = 1 + rand() % 3;
+		if (count == 1) food.push_back(new Meat());
+		if (count == 2) food.push_back(new Vegetable());
+		if (count == 3) food.push_back(new Fruit());
+	}
+	return food;
 }
 
-void add_to_storage(int index, MyStorage storage, Object *object)
+void add_to_storage(int index, Storage storage, list<Food*> food)
 {
-	storage.add_object(index, object); 
+	storage.add_object(index, food); 
 }
 
-void delete_from_storage(int index, MyStorage storage)
+void delete_from_storage(int index, Storage storage)
 {
 	storage.delete_objects(index);
 }
 
 int main()
 {
-	srand(time(NULL));
+	setlocale(LC_ALL, "");
+	srand((unsigned)time(NULL));
 
-	MyStorage storage2;
-	create_objects(rand()%storage2.get_count(), storage2);
-	//storage2.get_object(0);
-	printf("\n%d\n", storage2.get_count());
-	//delete_from_storage(rand() % storage2.get_count(), storage2);
-	storage2.get_object(1);
-	printf("\n%d\n\n", storage2.get_count());
+	Storage storage;
+	int index = 10 + rand() % 20;	
+	storage.add_object(index, cook_food(index, storage));
+	storage.get_object();
 	
 }
 
