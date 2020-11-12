@@ -2,11 +2,11 @@
 #include <list>
 #include <ctime>
 #include <Windows.h>
+#include <conio.h>
 
 using namespace std;
 
 const int AMOUNT = 100;
-
 
 class Food {
 public:
@@ -22,7 +22,6 @@ public:
 		cout << "Мясо\n";
 		SetConsoleTextAttribute(hConsole, (WORD)((0 << 4) | 7));
 		return new Meat();
-
 	}
 };
 
@@ -51,52 +50,48 @@ public:
 };
 
 
-
+void choose(list<Food*> food);
 
 class Storage {
 private:
-	int length;
-	//Food** objects = new Food*[length];
-	//list<Food>* food = new list<Food>[length];
 	list<Food*> food;
 public:
-	Storage() {
-		length = 10 + rand() % 15;
-	}
-	Storage(int length) {
-		this->length = length;
-	}
-	~Storage() {
-
-	}
-
-	void add_object(int index, list<Food*> food) {
+	void bring_food(list<Food*> food) {
 		for (auto i = food.begin(); i != food.end(); ++i) {
 			this->food.push_back(*i);		
 		}
 	}
+	void bring_one(Food* food) {
+		auto it = this->food.begin();
+		advance(it, rand() % this->food.size());	
+		this->food.insert(it, food);
+	}
 
-	void delete_objects(int index) {		
-		//delete objects[index];
-		//objects[index] = NULL;
+	void throw_food() {		
+		auto it = food.begin();
+		advance(it, rand() % food.size());
+		food.erase(it);
 	} 
 
-	void get_object() {
+	void choose_one() {
+		choose(food);
+	}
+
+	void get_food() {
 		for (auto i = food.begin(); i != food.end(); ++i) {
 			cout << (*i)->clone();
 			printf("\r");
 		}
+		printf("\r        \r");
 	}
 	 
-	int get_count() {
-		//return length;
+	Food* take_one() {
+		auto it = food.begin();
+		advance(it, rand() % food.size());
+		return *it;
 	}
 
 };
-
-list<Food*> cook_food(int index, Storage storage);
-void add_to_storage(int index, Storage storage, list<Food*> food);
-void delete_from_storage(int index, Storage storage);
 
 list<Food*> cook_food(int index, Storage storage)
 {
@@ -110,15 +105,47 @@ list<Food*> cook_food(int index, Storage storage)
 	return food;
 }
 
-void add_to_storage(int index, Storage storage, list<Food*> food)
+Food* buy_one()
 {
-	storage.add_object(index, food); 
+	int count = 1 + rand() % 3;
+	if (count == 1) return new Meat();
+	if (count == 2) return new Vegetable();
+	if (count == 3) return new Fruit();
 }
 
-void delete_from_storage(int index, Storage storage)
-{
-	storage.delete_objects(index);
+void choose(list<Food*> food) {
+	system("cls");
+	cout << "Нажмите на Enter\n";
+	int input = _getch();
+	auto it = food.begin();
+	int shift = 0;
+
+	if (input == 13) {
+		while (input != 27) {
+			advance(it, shift);
+
+			for (auto i = food.begin(); i != food.end(); ++i) {
+				if (i == it) {
+					cout << "--> ";
+					cout << (*i)->clone() << "\r";
+				}
+				else {
+					cout << "    ";
+					cout << (*i)->clone() << "\r";
+				}
+			}
+			printf("Нажмите на W or S");
+			input = _getch();
+			if (input == 119) shift = -1;
+			if (input == 115) shift = 1;
+			if (input == 119 && it == food.begin()) shift = 0;
+			if (input == 115 && it == food.end()) shift = 0;
+			
+			system("cls");
+		}
+	}
 }
+
 
 int main()
 {
@@ -126,9 +153,21 @@ int main()
 	srand((unsigned)time(NULL));
 
 	Storage storage;
-	int index = 10 + rand() % 20;	
-	storage.add_object(index, cook_food(index, storage));
-	storage.get_object();
-	
+	int index = 3 + rand() % 10;	
+	storage.bring_food(cook_food(index, storage));
+	storage.get_food();
+	_getch();
+	cout << "\n";
+	storage.throw_food();
+	storage.get_food();
+	cout << "\n\n";
+	_getch();
+	storage.bring_one(buy_one());
+	storage.get_food();
+	cout << "\n\n\n";
+	storage.choose_one();
+
+	Food* ds = storage.take_one();
+	cout << ds->clone();
 }
 
